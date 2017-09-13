@@ -1,0 +1,9 @@
+nguage: php
+
+php:
+  - '7.0.8'
+
+before_install:
+  - composer self-update && composer install
+
+script: ./vendor/bin/phpunit
