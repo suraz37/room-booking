@@ -1,0 +1,28 @@
+.modal-content {
+    width: 295px;
+}
+
+.table {
+    td {
+        text-align: center;
+    }
+
+    .weekends {
+        background-color: darken($body-bg, 10%);
+        th {
+            &.sunday, &.saturday {
+                color: white;
+                background-color: darkred;
+            }
+        }
+    }
+}
+
+.room-block {
+    &.single {
+        background-color: lighten($brand-info, 35%);
+    }
+    &.double {
+        background-color: lighten($brand-warning, 45%);
+    }
+}
