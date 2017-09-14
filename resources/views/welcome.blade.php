@@ -18,7 +18,7 @@
         background: #e0e0e0;
     }
 </style>
-<div id="example"></div>testing
+<div id="example"></div>
 <script src="{{asset('js/app.js')}}" ></script>
 
 </body>

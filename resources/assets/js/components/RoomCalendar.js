@@ -4,7 +4,6 @@ class RoomCalendar extends Component {
     constructor(props) {
         super(props);
         this.base_url = location.protocol + '//' + location.host;
-
         this.startDate = '01';
         this.monthFormat = 'YYYY-MM-';
         this.state = {
@@ -51,7 +50,6 @@ class RoomCalendar extends Component {
             }
         }
         let uri = this.base_url + '/single-operation';
-
         axios.post(uri, dateParam)
         .then(response => {
         })
@@ -69,21 +67,17 @@ class RoomCalendar extends Component {
 
     handleMonth(e) {
         e.preventDefault();
-
         let val = e.target.value;
         var formats = [this.monthFormat]
-
         if(moment(val, formats).isValid()) {
-            this.setState({from_date: val + this.startDate})
+            this.setState({date_from: val + '-' + this.startDate})
             this.tabRow();
         }
-
     }
 
     componentDidMount() {
-        this.tabRow();
         if(this.state.datas instanceof Array) {
-            let tempArray = this.state.datas;
+            this.tabRow();
         }
     }
 
@@ -92,8 +86,8 @@ class RoomCalendar extends Component {
             date_to: this.state.date_to,
             date_from: this.state.date_from,
         }
+        console.log(this.state.date_from);
         let uri = this.base_url + '/booking';
-
         axios.get(uri, {params: dateParam})
         .then(response => {
             this.setState({
@@ -103,12 +97,10 @@ class RoomCalendar extends Component {
         .catch(function (error) {
             console.log(error);
         })
-
     }
 
     render() {
         let selectedRow = JSON.parse(this.state.rowSelected);
-
         return (
             <div>
                 <div className="container">
@@ -122,16 +114,13 @@ class RoomCalendar extends Component {
                                         <div class="form-group col-sm-6">
                                             <input onChange={this.handleSelectedValue} name="something"
                                                 id="selectedRow" type="text" data-value={selectedRow.value}/>
-
                                             <button type="button" className="btn btn-default" data-dismiss="modal">
                                                 Cancel
                                             </button>
-
                                             <button type="button" className="btn btn-primary"
                                                 onClick={this.handlePopOverSubmit}>Ok
                                             </button>
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
@@ -162,7 +151,6 @@ class RoomCalendar extends Component {
                             <RoomRowSet setTitle={'Price'} setName={'single_room_price'} setOptions={this.state.datas}
                                 handlePopOver={this.handlePopOver}>
                             </RoomRowSet>
-
                             <tr>
                                 <td colSpan={this.state.datas.length}>Double Room</td>
                             </tr>
@@ -181,6 +169,7 @@ class RoomCalendar extends Component {
         )
     }
 }
+
 /**
  *
  * @param props
@@ -239,6 +228,13 @@ function RoomRowSet(props) {
     );
 }
 
+/**
+ * Assign defualt value for room option
+ *
+ * @param option
+ * @param roomType
+ * @returns {*}
+ */
 function setRoomOption(option, roomType) {
     let defaultSingleId = 1;
     let defaultDoubleId = 2;
@@ -276,8 +272,7 @@ function DaySet(props) {
                 let weekend = '';
                 if(props.setName === 'day') {
                     inner = moment(option.day).format('dddd');
-                    weekend = (inner === 'sunday' || inner === 'saturday') ? 'weekends' : '';
-
+                    weekend = (inner === 'Sunday' || inner === 'Saturday') ? 'weekends' : '';
                 }
                 if(props.setName === 'day_no') {
                     inner = moment(option.day).format('D');
