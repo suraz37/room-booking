@@ -75708,10 +75708,11 @@ var RoomCalendar = function (_Component) {
 
         _this.base_url = location.protocol + '//' + location.host;
         _this.startDate = '01';
+        _this.endDate = '14';
         _this.monthFormat = 'YYYY-MM-';
         _this.state = {
             date_from: moment().format(_this.monthFormat + _this.startDate),
-            date_to: moment().format(_this.monthFormat + '14'),
+            date_to: moment().format(_this.monthFormat + _this.endDate),
             rowSelected: '{"value":0}',
             datas: [],
             selectedValue: ''
@@ -75774,8 +75775,9 @@ var RoomCalendar = function (_Component) {
             e.preventDefault();
             var val = e.target.value;
             var formats = [this.monthFormat];
-            if (moment(val, formats).isValid()) {
+            if (moment(val, formats).isValid() && moment(val).year() == 2017) {
                 this.setState({ date_from: val + '-' + this.startDate });
+                this.setState({ date_to: val + '-' + this.endDate });
                 this.tabRow();
             }
         }
@@ -75795,7 +75797,7 @@ var RoomCalendar = function (_Component) {
                 date_to: this.state.date_to,
                 date_from: this.state.date_from
             };
-            console.log(this.state.date_from);
+
             var uri = this.base_url + '/booking';
             axios.get(uri, { params: dateParam }).then(function (response) {
                 _this2.setState({

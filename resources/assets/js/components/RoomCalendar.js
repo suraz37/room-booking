@@ -5,10 +5,11 @@ class RoomCalendar extends Component {
         super(props);
         this.base_url = location.protocol + '//' + location.host;
         this.startDate = '01';
+        this.endDate = '14';
         this.monthFormat = 'YYYY-MM-';
         this.state = {
             date_from: moment().format(this.monthFormat + this.startDate),
-            date_to: moment().format(this.monthFormat + '14'),
+            date_to: moment().format(this.monthFormat + this.endDate),
             rowSelected: '{"value":0}',
             datas: [],
             selectedValue: ''
@@ -68,9 +69,10 @@ class RoomCalendar extends Component {
     handleMonth(e) {
         e.preventDefault();
         let val = e.target.value;
-        var formats = [this.monthFormat]
-        if(moment(val, formats).isValid()) {
+        let formats = [this.monthFormat]
+        if(moment(val, formats).isValid() && moment(val).year() == 2017) {
             this.setState({date_from: val + '-' + this.startDate})
+            this.setState({date_to: val + '-' + this.endDate})
             this.tabRow();
         }
     }
@@ -86,7 +88,7 @@ class RoomCalendar extends Component {
             date_to: this.state.date_to,
             date_from: this.state.date_from,
         }
-        console.log(this.state.date_from);
+
         let uri = this.base_url + '/booking';
         axios.get(uri, {params: dateParam})
         .then(response => {

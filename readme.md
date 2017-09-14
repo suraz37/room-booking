@@ -1,5 +1,6 @@
 <p align="center">
-https://travis-ci.org/suraz37/room-booking.svg?branch=master
+<a href="https://travis-ci.org/suraz37/room-booking">
+<img src="https://travis-ci.org/suraz37/room-booking.svg?branch=master" alt="Build Status"></a>
 </p>
 
 ## About Room Booking
@@ -40,3 +41,4 @@ Note: This setup will update in docker
 ## Build
 
 - .travis.yml for all build script
+- docker-compose.yml for all services
