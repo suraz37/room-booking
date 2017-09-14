@@ -36,13 +36,13 @@ class RoomBookingTest extends TestCase
     }
 
     /**
-     * covers::getBookingByDateRange
+     * @covers ::getBookingByDateRange
      */
     public function testGetBookingByDateRange()
     {
-        $data  = [
+        $data   = [
             'date_from' => '2017-09-01',
-        'date_to' => '2017-09-05'
+            'date_to' => '2017-09-05'
         ];
         $result = [];
 
@@ -62,7 +62,7 @@ class RoomBookingTest extends TestCase
     }
 
     /**
-     * covers::updateOrCreateBooking
+     * @covers ::updateOrCreateBooking
      */
     public function testUpdateOrCreateBooking()
     {
@@ -84,7 +84,7 @@ class RoomBookingTest extends TestCase
     }
 
     /**
-     * covers::bulkOperation
+     * @covers ::bulkOperation
      */
     public function testBulkOperation()
     {
@@ -110,16 +110,24 @@ class RoomBookingTest extends TestCase
             ->andReturn(true);
     }
 
-    public function testMapBookingByDateRange() {
-        $bookingData = [[
-            'id' => 1,
-            'room_type_id' => 1,
-            'day' => '2017-09-01',
-            'price' => 50,
-            'available_quantity' => 10
-        ]];
-        $start_date = '2017-09-01';
-        $end_date = '2017-09-02';
+    /**
+     * test for map store data and empty data for all date range.
+     *
+     * @covers ::mapBookingByDateRange
+     */
+    public function testMapBookingByDateRange()
+    {
+        $bookingData = [
+            [
+                'id' => 1,
+                'room_type_id' => 1,
+                'day' => '2017-09-01',
+                'price' => 50,
+                'available_quantity' => 10
+            ]
+        ];
+        $start_date  = '2017-09-01';
+        $end_date    = '2017-09-02';
 
         $expected = [
             [

@@ -22,12 +22,12 @@
 - Laravel 5.5 React Preset
 - Backend as Laravel 5.5 framework .
 - Frontend as ReactJS.
-- Database MySql 7.5
+- Database MySql 5.7
 
 ## Setup Process
 
 - composer install
-- .env.example .env  // update database configuration as in docker-compose.yaml file
+- .env.example .env  // update database configuration as in docker-compose.yml file
 - sudo chmod -R 777 storage && chmod -R 777 bootstrap/cache
 
 - docker-composer up -d --build
