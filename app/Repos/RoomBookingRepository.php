@@ -8,7 +8,14 @@ use Illuminate\Database\DatabaseManager;
 
 class RoomBookingRepository
 {
+    /**
+     * @var RoomBooking
+     */
     protected $roomBooking;
+
+    /**
+     * @var DatabaseManager
+     */
     protected $db;
 
     public function __construct(RoomBooking $roomBooking, DatabaseManager $db)
@@ -38,9 +45,9 @@ class RoomBookingRepository
     /**
      * Create or update data on booking
      *
-     * @param $data
+     * @param array $data
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return RoomBooking
      */
     public function updateOrCreateBooking(array $data) : RoomBooking
     {
@@ -62,7 +69,6 @@ class RoomBookingRepository
 
     /**
      * @param $data
-     * @param array $selectedDays
      *
      * @return array
      */
@@ -72,15 +78,15 @@ class RoomBookingRepository
         $start  = Carbon::createFromFormat('Y-m-d', $data['date_from']);
         $end    = Carbon::createFromFormat('Y-m-d', $data['date_to']);
 
-        $this->db->beginTransaction();
+        // IMPORTANT: Heavy data operation will be here
+
         while($start->lte($end)) {
             if(in_array(strtolower($start->format('l')), $data['checked_days'])) {
-                $data['day']      = $start->toDateString();
+                $data['day'] = $start->toDateString();
                 $result[] = $this->updateOrCreateBooking($data);
             }
             $start->addDay();
         }
-        $this->db->commit();
 
         return $result;
     }
@@ -94,7 +100,7 @@ class RoomBookingRepository
      *
      * @param string $startDate
      * @param string $endDate
-     * @param $response
+     * @param $data
      *
      * @return array
      */

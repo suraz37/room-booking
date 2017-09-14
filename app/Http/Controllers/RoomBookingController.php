@@ -3,22 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Repos\RoomBookingRepository;
+use Illuminate\Contracts\Logging\Log;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class RoomBookingController extends Controller
+class RoomBookingController extends GenericController
 {
+    /**
+     * @var $logger
+     */
+    protected $logger;
+    /**
+     * @var RoomBookingRepository
+     */
     protected $bookingRepository;
 
-    public function __construct(RoomBookingRepository $bookingRepository)
+    public function __construct(Log $logger, RoomBookingRepository $bookingRepository)
     {
+        $this->logger            = $logger;
         $this->bookingRepository = $bookingRepository;
     }
 
     /**
-     * Display a listing of the resource.
+     * @param Request $request
      *
-     * @return \Illuminate\Http\Response
+     * @return mixed
      */
     public function index(Request $request)
     {
@@ -26,21 +36,23 @@ class RoomBookingController extends Controller
             'date_from' => 'required|date_format:Y-m-d',
             'date_to' => 'required|date_format:Y-m-d',
         ]);
-        $params = $request->only('date_from', 'date_to');
 
-        $response = $this->bookingRepository->getBookingByDateRange($params);
+        // Validation fail bho bhane json aaucha ki aaudaina response ma bhaneko
+
+        $response = $this->bookingRepository->getBookingByDateRange($request->only('date_from', 'date_to'));
 
         return response()->json($response);
     }
 
     /**
-     *  Bulk operation for room booking
+     * Bulk operation
      *
      * @param Request $request
+     * @param DatabaseManager $databaseManager
      *
      * @return mixed
      */
-    public function store(Request $request)
+    public function store(Request $request, DatabaseManager $databaseManager)
     {
         $this->validate($request, [
             'room_type_id' => 'required|integer|exists:room_types,id',
@@ -51,11 +63,26 @@ class RoomBookingController extends Controller
             'date_from' => 'required|date_format:Y-m-d',
             'date_to' => 'required:after:date_from:date_format:Y-m-d',
         ]);
+
         $params = $request->only('room_type_id', 'checked_days', 'price', 'quantity', 'date_from', 'date_to');
 
-        $this->bookingRepository->bulkOperation($params);
+        $databaseManager->beginTransaction();
 
-        return response()->json(['status' => true], Response::HTTP_CREATED);
+        try {
+            $this->logger->info("Started the bulk operation action");
+            $results = $this->bookingRepository->bulkOperation($params);
+
+        } catch (\Exception $exception) {
+            $databaseManager->rollack();
+
+            $this->logger->error("Error during bulk operation");
+
+            return response()->json(['status' => false, 'error' => $exception->getMessage()],
+                Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+        $databaseManager->commit();
+
+        return response()->json(['status' => isset($results)], Response::HTTP_CREATED);
     }
 
     /**
@@ -75,8 +102,8 @@ class RoomBookingController extends Controller
         ]);
         $params = $request->only('room_type_id', 'day', 'price', 'quantity');
 
-        $this->bookingRepository->updateOrCreateBooking($params);
+        $result = $this->bookingRepository->updateOrCreateBooking($params);
 
-        return response()->json(['status' => true], Response::HTTP_CREATED);
+        return response()->json(['status' => !empty($result) ? true : false], Response::HTTP_CREATED);
     }
 }

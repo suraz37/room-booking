@@ -6,16 +6,16 @@ use App\Models\RoomBooking;
 use App\Repos\RoomBookingRepository;
 use Illuminate\Database\DatabaseManager;
 use Tests\TestCase;
-use Mockery as m;
+use Mockery;
 
 class RoomBookingTest extends TestCase
 {
     /**
-     * @var m\MockInterface | RoomBooking
+     * @var \Mockery\MockInterface | RoomBooking
      */
     protected $roomBookingMock;
     /**
-     * @var m\MockInterface | DatabaseManager
+     * @var \Mockery\MockInterface | DatabaseManager
      */
     protected $dbMock;
 
@@ -26,8 +26,8 @@ class RoomBookingTest extends TestCase
 
     public function setUp()
     {
-        $this->roomBookingMock = m::mock(RoomBooking::class);
-        $this->dbMock          = m::mock(DatabaseManager::class);
+        $this->roomBookingMock = Mockery::mock(RoomBooking::class);
+        $this->dbMock          = Mockery::mock(DatabaseManager::class);
 
         $this->roomBookingRepository = new RoomBookingRepository(
             $this->roomBookingMock,
@@ -40,25 +40,17 @@ class RoomBookingTest extends TestCase
      */
     public function testGetBookingByDateRange()
     {
-        $data   = [
+        $data = [
             'date_from' => '2017-09-01',
             'date_to' => '2017-09-05'
         ];
-        $result = [];
 
         $this->roomBookingMock
-            ->shouldReceive('where')
-            ->with('day', '>=', $data['date_from'])
+            ->shouldReceive('where')->with('day', '>=', $data['date_from'])->andReturnSelf()
+            ->shouldReceive('where')->with('day', '<=', $data['date_to'])->andReturnSelf()
+            ->shouldReceive('select')->with(['id', 'room_type_id', 'day', 'price', 'currency', 'available_quantity'])
             ->andReturnSelf()
-            ->shouldReceive('where')
-            ->with('day', '<=', $data['date_to'])
-            ->andReturnSelf()
-            ->shouldReceive('select')
-            ->with(['id', 'room_type_id', 'day', 'price', 'currency', 'available_quantity'])
-            ->andReturnSelf()
-            ->shouldReceive('get')
-            ->andReturn($result);
-
+            ->shouldReceive('get')->andReturn([]);
     }
 
     /**
@@ -66,20 +58,18 @@ class RoomBookingTest extends TestCase
      */
     public function testUpdateOrCreateBooking()
     {
-        $data1  = [
+        $criteria = [
             'room_type_id' => 1,
             'day' => 1
         ];
-        $data2  = [
-            'room_type_id' => 1,
-            'day' => 1,
+        $data     = [
             'price' => 1,
             'available_quantity' => 1
         ];
-        $result = [];
+        $result   = [];
         $this->roomBookingMock
             ->shouldReceive('updateOrCreate')
-            ->with($data1, $data2)
+            ->with($criteria, $data)
             ->andReturn($result);
     }
 
@@ -111,11 +101,9 @@ class RoomBookingTest extends TestCase
     }
 
     /**
-     * test for map store data and empty data for all date range.
-     *
      * @covers ::mapBookingByDateRange
      */
-    public function testMapBookingByDateRange()
+    public function testMapBookingByDateRangeReturnsNullRecords()
     {
         $bookingData = [
             [
@@ -147,12 +135,69 @@ class RoomBookingTest extends TestCase
         ];
 
         $actual = $this->roomBookingRepository->mapBookingByDateRange($start_date, $end_date, $bookingData);
-
         $this->assertEquals($expected, $actual);
+    }
 
+    /**
+     * For map store data and empty data for all date range.
+     *
+     * @covers ::mapBookingByDateRange
+     */
+    public function testMapBookingByDateRange()
+    {
+        $bookingData = [
+            [
+                'id' => 1,
+                'room_type_id' => 1,
+                'day' => '2017-09-01',
+                'price' => 50,
+                'available_quantity' => 10
+            ]
+        ];
+        $start_date  = '2017-09-01';
+        $end_date    = '2017-09-01';
+
+        $expected = [
+            [
+                'id' => 1,
+                'room_type_id' => 1,
+                'day' => '2017-09-01',
+                'price' => 50,
+                'available_quantity' => 10
+            ],
+        ];
+
+        $actual = $this->roomBookingRepository->mapBookingByDateRange($start_date, $end_date, $bookingData);
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * Total count data provider
+     *
+     * @return array
+     */
+    public function totalCountUpdateProvider()
+    {
+        return [
+            [30, '2017-09-01', '2017-09-30', []],
+            [2, '2017-09-01', '2017-09-02', []],
+            [10, '2017-09-01', '2017-09-10', []],
+        ];
+    }
+
+    /**
+     * @dataProvider totalCountUpdateProvider
+     *
+     * @param $expected
+     * @param $startDate
+     * @param $endDate
+     * @param array $data
+     */
+    public function testReturnsTheTotalCountOfUpdates($expected, $startDate, $endDate, array $data)
+    {
         $this->assertEquals(
-            30,
-            sizeof($this->roomBookingRepository->mapBookingByDateRange('2017-09-01', '2017-09-30', []))
+            $expected,
+            sizeof($this->roomBookingRepository->mapBookingByDateRange($startDate, $endDate, $data))
         );
     }
 }
